@@ -134,7 +134,11 @@ class Component(Base, ABC):
 
             # Check if the key is an event trigger.
             if key in triggers:
-                kwargs["event_triggers"][key] = self._create_event_chain(key, value)
+                state_name = kwargs["value"].name if kwargs.get("value", False) else ""
+                full_control = kwargs.get("full_control", False)
+                kwargs["event_triggers"][key] = self._create_event_chain(
+                    key, value, state_name, full_control
+                )
 
         # Remove any keys that were added as events.
         for key in kwargs["event_triggers"]:
@@ -167,12 +171,16 @@ class Component(Base, ABC):
         value: Union[
             Var, EventHandler, EventSpec, List[Union[EventHandler, EventSpec]], Callable
         ],
+        state_name: str = "",
+        full_controll: bool = False,
     ) -> Union[EventChain, Var]:
         """Create an event chain from a variety of input types.
 
         Args:
             event_trigger: The event trigger to bind the chain to.
             value: The value to create the event chain from.
+            state_name: The state to be fully controlled.
+            full_controll: Whether full contorolled or not.
 
         Returns:
             The event chain.
@@ -240,8 +248,13 @@ class Component(Base, ABC):
                 for e in events
             ]
 
+        # set state name when fully controlled input
+        state_name = state_name if full_controll else ""
+
         # Return the event chain.
-        return EventChain(events=events)
+        return EventChain(
+            events=events, state_name=state_name, full_controll=full_controll
+        )
 
     @classmethod
     def get_triggers(cls) -> Set[str]:

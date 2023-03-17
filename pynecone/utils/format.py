@@ -15,7 +15,7 @@ from pynecone import constants
 from pynecone.utils import types
 
 if TYPE_CHECKING:
-    from pynecone.event import EventHandler, EventSpec
+    from pynecone.event import EventChain, EventHandler, EventSpec
 
 WRAP_MAP = {
     "{": "}",
@@ -300,6 +300,25 @@ def format_upload_event(event_spec: EventSpec) -> str:
 
     state, name = get_event_handler_parts(event_spec.handler)
     return f'uploadFiles({state}, {templates.RESULT}, {templates.SET_RESULT}, {state}.files, "{name}", UPLOAD)'
+
+
+def format_full_controll_event(event_chain: EventChain) -> str:
+    """Format an fully controlled input prop.
+
+    Args:
+        event_chain: The event chain for full controlled input.
+
+    Returns:
+        The compiled event.
+    """
+    from pynecone.compiler import templates
+
+    event_spec = event_chain.events[0]
+    arg = event_spec.args[0][1]
+    state_name = event_chain.state_name
+    chain = ",".join([format_event(event) for event in event_chain.events])
+    event = templates.FULL_CONTROLL(state_name=state_name, arg=arg, chain=chain)
+    return event
 
 
 def format_query_params(router_data: Dict[str, Any]) -> Dict[str, str]:
